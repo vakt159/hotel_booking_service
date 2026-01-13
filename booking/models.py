@@ -19,5 +19,5 @@ class Booking(models.Model):
     check_in_date = models.DateField()
     check_out_date = models.DateField()
     actual_check_out_date = models.DateField(null=True)
-    status = models.CharField(choices=BookingStatus)
+    status = models.CharField(choices=BookingStatus, max_length=20)
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2)

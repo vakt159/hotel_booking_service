@@ -6,6 +6,6 @@ class Room(models.Model):
         DOUBLE = "Double"
         SUITE = "Suite"
     number = models.CharField(max_length=255, unique=True)
-    type = models.CharField(choices=RoomType)
+    type = models.CharField(choices=RoomType, max_length=20)
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2)
     capacity = models.IntegerField()
