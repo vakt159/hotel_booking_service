@@ -4,16 +4,6 @@ from django.db.models import ForeignKey
 from booking.models import Booking
 
 
-# Payment
-# Status: Enum: PENDING | PAID | EXPIRED
-# Type: Enum: BOOKING | CANCELLATION_FEE | NO_SHOW_FEE | OVERSTAY_FEE
-# Booking id: int
-# Session url: Url # URL to Stripe payment session
-# Session id: str # ID of Stripe payment session
-# Money to pay: decimal (in USD)
-
-
-# Create your models here.
 class Payment(models.Model):
     class PaymentStatus(models.TextChoices):
         PENDING = "Pending"
@@ -29,7 +19,7 @@ class Payment(models.Model):
     status = models.CharField(choices=PaymentStatus, max_length=20)
     type = models.CharField(choices=PaymentType, max_length=20)
     booking = ForeignKey(Booking, related_name="payments",
-                         on_delete=models.SET_NULL)
+                         on_delete=models.CASCADE)
     session_url = models.URLField()
     session_id = models.CharField(max_length=255)
     money_to_pay = models.DecimalField(max_digits=10, decimal_places=2)
