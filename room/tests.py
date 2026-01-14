@@ -18,7 +18,6 @@ def room_detail_url(room_id: int) -> str:
 def create_user(**params):
     defaults = {
         "email": "user@test.com",
-        "username": "user1",
         "password": "test12345",
     }
     defaults.update(params)
@@ -28,7 +27,6 @@ def create_user(**params):
 def create_admin(**params):
     defaults = {
         "email": "admin@test.com",
-        "username": "admin1",
         "password": "test12345",
     }
     defaults.update(params)

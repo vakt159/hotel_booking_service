@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_spectacular",
     "rest_framework",
-    'drf_spectacular',
     'rest_framework_simplejwt',
     "guest",
     "payment",
