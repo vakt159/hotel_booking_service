@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_filters",
+    "drf_spectacular",
     "rest_framework",
     'drf_spectacular',
     'rest_framework_simplejwt',
