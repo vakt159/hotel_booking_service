@@ -58,13 +58,11 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         check_out = attrs["check_out_date"]
         room = attrs["room"]
 
-        # Check that check-out is after check-in
         if check_out <= check_in:
             raise serializers.ValidationError(
                 "Check-out date must be after check-in date."
             )
 
-        # Check for overlapping bookings
         overlapping = Booking.objects.filter(
             room=room,
             status__in=[
