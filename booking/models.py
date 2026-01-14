@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import ForeignKey
+from django.db.models import ForeignKey, Q, F
 
 from room.models import Room
 
@@ -21,3 +21,11 @@ class Booking(models.Model):
     actual_check_out_date = models.DateField(null=True)
     status = models.CharField(choices=BookingStatus, max_length=20)
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        constraints = {
+            models.CheckConstraint(
+                check=Q(check_out_date__gt=F("check_in_date")),
+                name = "check_out_after_check_in",
+            ),
+        }
