@@ -47,11 +47,11 @@ INSTALLED_APPS = [
     "debug_toolbar",
     'rest_framework_simplejwt',
     "django_celery_beat",
+    "booking.apps.BookingConfig",
     "guest",
     "notifications",
     "payment",
     "room",
-    "booking"
 ]
 
 MIDDLEWARE = [
