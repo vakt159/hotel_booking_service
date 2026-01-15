@@ -111,6 +111,7 @@ class BookingViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="check-in")
     def check_in(self, request, pk=None):
         booking = self.get_object()
+        today = timezone.localdate()
 
         if booking.status != Booking.BookingStatus.BOOKED:
             return Response(
@@ -118,7 +119,75 @@ class BookingViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        if today < booking.check_in_date:
+            return Response(
+                {"detail": "Too early to check in."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if today >= booking.check_out_date:
+            return Response(
+                {"detail": "Check-in is not possible after check-out date."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         booking.status = Booking.BookingStatus.ACTIVE
         booking.save(update_fields=["status"])
+
+        return Response(BookingReadSerializer(booking).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="cancel")
+    def cancel(self, request, pk=None):
+        booking = self.get_object()
+        today = timezone.localdate()
+
+        if booking.status != Booking.BookingStatus.BOOKED:
+            return Response(
+                {"detail": "Only BOOKED bookings can be cancelled."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # only before check-in date
+        if today >= booking.check_in_date:
+            return Response(
+                {"detail": "Cancellation is allowed only before check-in date."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # hook: cancellation fee if <24h before check-in
+        # (поки Payment Service немає у нас — просто TODO)
+        check_in_dt = timezone.make_aware(
+            datetime.combine(booking.check_in_date, time.min)
+        )
+        if timezone.now() >= check_in_dt - timedelta(hours=24):
+            # TODO: create CANCELLATION_FEE payment when Payment Service is implemented
+            pass
+
+        booking.status = Booking.BookingStatus.CANCELLED
+        booking.save(update_fields=["status"])
+
+        return Response(BookingReadSerializer(booking).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="check-out")
+    def check_out(self, request, pk=None):
+        booking = self.get_object()
+        today = timezone.localdate()
+
+        if booking.status != Booking.BookingStatus.ACTIVE:
+            return Response(
+                {"detail": "Only ACTIVE bookings can be checked out."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        booking.status = Booking.BookingStatus.COMPLETED
+        booking.actual_check_out_date = today
+        booking.save(update_fields=["status", "actual_check_out_date"])
+
+        # TODO: create main Payment when Payment Service is implemented
+
+        # late checkout hook
+        if today > booking.check_out_date:
+            # TODO: create OVERSTAY_FEE Payment when Payment Service is implemented
+            pass
 
         return Response(BookingReadSerializer(booking).data, status=status.HTTP_200_OK)
