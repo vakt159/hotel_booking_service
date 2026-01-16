@@ -1,5 +1,6 @@
 from celery import shared_task
 from django.utils.timezone import localdate
+
 from booking.models import Booking
 
 

@@ -1,9 +1,10 @@
 from datetime import date, timedelta
-from django.test import TestCase
-from django.contrib.auth import get_user_model
 
-from booking.serializers import BookingCreateSerializer
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+
 from booking.models import Booking
+from booking.serializers import BookingCreateSerializer
 from room.models import Room
 
 

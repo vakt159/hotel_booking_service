@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import ForeignKey, Q, F
+from django.db.models import F, ForeignKey, Q
 
 from room.models import Room
 

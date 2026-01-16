@@ -1,18 +1,18 @@
 from datetime import timedelta
 
 from django.utils.dateparse import parse_date
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from django_filters.rest_framework import DjangoFilterBackend
 
 from booking.models import Booking
 from room.models import Room
-from room.serializers import RoomSerializer, RoomCalendarSerializer
 from room.permissions import IsAdminOrReadOnly
+from room.serializers import RoomCalendarSerializer, RoomSerializer
 
 
 class RoomViewSet(ModelViewSet):

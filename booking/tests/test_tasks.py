@@ -1,12 +1,12 @@
+from datetime import timedelta
+
 from django.test import TestCase
 from django.utils.timezone import localdate
-from datetime import timedelta
-from unittest.mock import patch
 
 from booking.models import Booking
-from booking.tasks import mark_no_show_bookings, notify_no_show_telegram
-from room.models import Room
+from booking.tasks import mark_no_show_bookings
 from guest.models import Guest
+from room.models import Room
 
 
 class MarkNoShowBookingsTestCase(TestCase):

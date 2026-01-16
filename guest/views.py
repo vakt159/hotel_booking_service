@@ -1,11 +1,10 @@
+# Create your views here.
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from guest.serializers import UserSerializer
-
-# Create your views here.
-from drf_spectacular.utils import extend_schema, OpenApiResponse
 
 
 @extend_schema(
