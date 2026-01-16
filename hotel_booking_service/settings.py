@@ -51,10 +51,11 @@ INSTALLED_APPS = [
     "debug_toolbar",
     'rest_framework_simplejwt',
     "django_celery_beat",
+    "booking.apps.BookingConfig",
     "guest",
+    "notifications",
     "payment",
     "room",
-    "booking"
 ]
 
 MIDDLEWARE = [
@@ -170,3 +171,7 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(hour=0, minute=1),
     },
 }
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"

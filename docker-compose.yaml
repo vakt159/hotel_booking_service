@@ -79,20 +79,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-#
-#  telegram_bot:
-#    build:
-#      context: .
-#    command: python manage.py bot
-#    env_file:
-#      - .env
-#    depends_on:
-#      - db
-#      - redis
-#    restart: unless-stopped
+
+  telegram_bot:
+    build:
+      context: .
+    command: python manage.py run_telegram_bot
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
 
 volumes:
   db_data:
   media_data:
   static_data:
-  redis_data:
+#  redis_data:
