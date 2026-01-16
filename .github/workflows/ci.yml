@@ -31,18 +31,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-poetry-
 
-      - name: Install dependencies for linting
-        run: poetry install --no-root --only main
+      - name: Install dependencies
+        run: poetry install --no-root
 
       - name: Run Ruff Linter
         run: poetry run ruff check --output-format=github .
 
       - name: Run Ruff Formatter Check
-        run: poetry run ruff format --check .
+        run: poetry run ruff format --diff .
 
   test:
     name: Run Django Tests
-    needs: lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -58,8 +57,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          - 5432:5432
 
       redis:
         image: redis:7
@@ -68,8 +65,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          - 6379:6379
 
     steps:
       - name: Checkout repository
@@ -80,22 +75,28 @@ jobs:
         with:
           python-version: "3.12.8"
 
-      - name: Install Poetry & Dependencies
+      - name: Install Poetry
         uses: snok/install-poetry@v1
-        with:
-          install-args: "--no-root"
-      
-      - name: Install Client Tools
-        run: sudo apt-get update && sudo apt-get install -y postgresql-client redis-tools
 
-      - name: Wait for Services
+      - name: Cache Poetry and pip
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pypoetry
+            ~/.cache/pip
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Wait for Postgres & Redis
         run: |
           echo "Waiting for Postgres..."
-          until pg_isready -h localhost -p 5432 -U "${{ secrets.POSTGRES_USER }}"; do sleep 1; done
-          echo "Postgres is ready."
+          until pg_isready -h postgres -p 5432; do sleep 1; done
           echo "Waiting for Redis..."
-          until redis-cli -h localhost ping | grep -q PONG; do sleep 1; done
-          echo "Redis is ready."
+          until redis-cli -h redis ping | grep PONG; do sleep 1; done
 
       - name: Run Django Tests
         env:
@@ -103,8 +104,9 @@ jobs:
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_HOST: localhost
+          POSTGRES_HOST: postgres
           POSTGRES_PORT: 5432
-          REDIS_HOST: localhost
+          REDIS_HOST: redis
           REDIS_PORT: 6379
         run: poetry run python manage.py test
+
