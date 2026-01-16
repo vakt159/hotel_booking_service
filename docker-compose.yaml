@@ -13,8 +13,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-#      redis:
-#        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - .:/app
       - media_data:/vol/web/media
@@ -35,52 +35,52 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
-#  celery:
-#    build:
-#      context: .
-#    command: celery -A hotel_booking_service worker --loglevel=info
-#    env_file:
-#      - .env
-#    depends_on:
-#      db:
-#        condition: service_healthy
-#      redis:
-#        condition: service_healthy
-#    volumes:
-#      - .:/app
-#      - media_data:/vol/web/media
-#    restart: unless-stopped
-#
-#  celery-beat:
-#    build:
-#      context: .
-#    command: >
-#      celery -A hotel_booking_service
-#      beat -l info
-#      --scheduler django_celery_beat.schedulers:DatabaseScheduler
-#    env_file:
-#      - .env
-#    depends_on:
-#      db:
-#        condition: service_healthy
-#      redis:
-#        condition: service_healthy
-#    volumes:
-#      - .:/app
-#    restart: unless-stopped
-#
-#  redis:
-#    image: redis:7-alpine
-#    ports:
-#      - "6379:6379"
-#    volumes:
-#      - redis_data:/data
-#    restart: always
-#    healthcheck:
-#      test: [ "CMD", "redis-cli", "ping" ]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 5
+  celery:
+    build:
+      context: .
+    command: celery -A hotel_booking_service worker --loglevel=info
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - media_data:/vol/web/media
+    restart: unless-stopped
+
+  celery-beat:
+    build:
+      context: .
+    command: >
+      celery -A hotel_booking_service
+      beat -l info
+      --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 #
 #  telegram_bot:
 #    build:
@@ -97,3 +97,4 @@ volumes:
   db_data:
   media_data:
   static_data:
+  redis_data:
