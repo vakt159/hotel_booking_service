@@ -31,17 +31,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-poetry-
 
-      - name: Install dependencies
-        run: poetry install --no-root
+      - name: Install dependencies for linting
+        run: poetry install --no-root --only main
 
       - name: Run Ruff Linter
         run: poetry run ruff check --output-format=github .
 
       - name: Run Ruff Formatter Check
-        run: poetry run ruff format --diff .
+        run: poetry run ruff format --check .
 
   test:
     name: Run Django Tests
+    needs: lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -49,14 +50,16 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB || test_db }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER || test_user }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || test_password}}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
       redis:
         image: redis:7
@@ -65,6 +68,8 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 6379:6379
 
     steps:
       - name: Checkout repository
@@ -74,39 +79,32 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.12.8"
+      
+      - name: Install Client Tools
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client redis-tools
 
-      - name: Install Poetry
+      - name: Install Poetry & Dependencies
         uses: snok/install-poetry@v1
-
-      - name: Cache Poetry and pip
-        uses: actions/cache@v4
         with:
-          path: |
-            ~/.cache/pypoetry
-            ~/.cache/pip
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
+          install-args: "--no-root"
 
-      - name: Install dependencies
-        run: poetry install --no-root
-
-      - name: Wait for Postgres & Redis
+      - name: Wait for Services
         run: |
           echo "Waiting for Postgres..."
-          until pg_isready -h postgres -p 5432; do sleep 1; done
+          until pg_isready -h localhost -p 5432 -U "${{ secrets.POSTGRES_USER }}"; do sleep 1; done
+          echo "Postgres is ready."
           echo "Waiting for Redis..."
-          until redis-cli -h redis ping | grep PONG; do sleep 1; done
+          until redis-cli -h localhost ping | grep -q PONG; do sleep 1; done
+          echo "Redis is ready."
 
       - name: Run Django Tests
         env:
-          SECRET_KEY: ${{ secrets.SECRET_KEY || very_super_strong_secure_key }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB || test_db }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER || test_user }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || test_password }}
-          POSTGRES_HOST: postgres
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
-          REDIS_HOST: redis
+          REDIS_HOST: localhost
           REDIS_PORT: 6379
         run: poetry run python manage.py test
-
