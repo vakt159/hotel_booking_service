@@ -38,7 +38,7 @@ jobs:
         run: poetry run ruff check --output-format=github .
 
       - name: Run Ruff Formatter Check
-        run: poetry run ruff format --check .
+        run: poetry run ruff format --diff .
 
   test:
     name: Run Django Tests
