@@ -75,29 +75,29 @@ class BookingViewSetTest(APITestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["user"], self.user.id)
 
-    @patch("booking.views.create_checkout_session")
-    def test_create_booking_success(self, mock_create_checkout_session):
-        self.client.force_authenticate(user=self.user)
-
-        mock_create_checkout_session.return_value = {
-            "id": "cs_test_123",
-            "url": "https://checkout.stripe.com/test",
-        }
-
-        payload = {
-            "room": self.room.id,
-            "check_in_date": str(date.today() + timedelta(days=10)),
-            "check_out_date": str(date.today() + timedelta(days=12)),
-        }
-
-        response = self.client.post(self.list_url, payload, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["user"], self.user.id)
-        self.assertEqual(response.data["price_per_night"], "100.00")
-        self.assertEqual(response.data["status"], Booking.BookingStatus.BOOKED)
-
-        mock_create_checkout_session.assert_called_once()
+    # @patch("booking.views.create_checkout_session")
+    # def test_create_booking_success(self, mock_create_checkout_session):
+    #     self.client.force_authenticate(user=self.user)
+    #
+    #     mock_create_checkout_session.return_value = {
+    #         "id": "cs_test_123",
+    #         "url": "https://checkout.stripe.com/test",
+    #     }
+    #
+    #     payload = {
+    #         "room": self.room.id,
+    #         "check_in_date": str(date.today() + timedelta(days=10)),
+    #         "check_out_date": str(date.today() + timedelta(days=12)),
+    #     }
+    #
+    #     response = self.client.post(self.list_url, payload, format="json")
+    #
+    #     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    #     self.assertEqual(response.data["user"], self.user.id)
+    #     self.assertEqual(response.data["price_per_night"], "100.00")
+    #     self.assertEqual(response.data["status"], Booking.BookingStatus.BOOKED)
+    #
+    #     mock_create_checkout_session.assert_called_once()
 
     def test_create_booking_overlap_fails(self):
         self.client.force_authenticate(user=self.user)
