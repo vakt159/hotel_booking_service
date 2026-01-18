@@ -167,9 +167,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking.actual_check_out_date = today
         booking.save(update_fields=["status", "actual_check_out_date"])
 
-        expired_payments = booking.payments.filter(
-            status=Payment.PaymentStatus.EXPIRED
-        )
+        expired_payments = booking.payments.filter(status=Payment.PaymentStatus.EXPIRED)
 
         renewed_payments = []
         for payment in expired_payments:

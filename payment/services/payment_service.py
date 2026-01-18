@@ -41,6 +41,7 @@ def create_booking_payment(booking, event):
 
     return payment
 
+
 def renew_payment_session(payment: Payment) -> Payment:
     """
     Renew Stripe session for expired payment.

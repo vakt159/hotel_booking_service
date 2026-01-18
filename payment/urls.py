@@ -3,9 +3,9 @@ from django.urls import path
 from payment.views import (
     PaymentCancelView,
     PaymentListView,
+    PaymentRenewView,
     PaymentSuccessView,
     StripeWebhook,
-    PaymentRenewView,
 )
 
 app_name = "payments"
@@ -15,5 +15,5 @@ urlpatterns = [
     path("webhook/", StripeWebhook.as_view(), name="stripe-webhook"),
     path("success/", PaymentSuccessView.as_view(), name="success"),
     path("cancel/", PaymentCancelView.as_view(), name="cancel"),
-    path("payments/<int:pk>/renew/", PaymentRenewView.as_view(), name="payment-renew")
+    path("payments/<int:pk>/renew/", PaymentRenewView.as_view(), name="payment-renew"),
 ]
