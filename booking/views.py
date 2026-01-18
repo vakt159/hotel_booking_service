@@ -19,9 +19,13 @@ from booking.filters import BookingFilter
 from booking.models import Booking
 from booking.serializers import BookingCreateSerializer, BookingReadSerializer
 from payment.models import Payment
-from payment.services.payment_service import calculate_payment_amount
+from payment.services.payment_service import (
+    calculate_payment_amount,
+    renew_payment_session,
+)
 from payment.services.stripe_service import create_checkout_session
 from payment.tasks import create_stripe_payment_task
+
 from payment.services.payment_service import renew_payment_session
 
 
