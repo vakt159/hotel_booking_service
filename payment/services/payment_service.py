@@ -1,10 +1,15 @@
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 
 from payment.models import Payment
 from payment.services.stripe_service import create_checkout_session
 
-from decimal import Decimal
+
+from django.utils import timezone
+
+from payment.models import Payment
+from payment.services.stripe_service import create_checkout_session
 
 
 def calculate_payment_amount(booking, event) -> Decimal | None:
@@ -14,8 +19,9 @@ def calculate_payment_amount(booking, event) -> Decimal | None:
     if event == Payment.PaymentType.CANCELLATION_FEE:
         return price * Decimal("0.5")
     elif event == Payment.PaymentType.OVERSTAY_FEE:
+        today = timezone.localdate()
         overstay_days = max(
-            (booking.actual_check_out_date - booking.check_out_date).days, 0
+            (today - booking.check_out_date).days, 0
         )
         return overstay_days * booking.price_per_night * Decimal("1.5")
     elif event == Payment.PaymentType.NO_SHOW_FEE:

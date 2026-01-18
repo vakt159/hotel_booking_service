@@ -3,8 +3,6 @@ import os
 import requests
 from celery import shared_task
 
-from notifications.models import TelegramSubscriber
-
 
 @shared_task(
     bind=True,

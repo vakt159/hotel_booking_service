@@ -152,7 +152,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             else Payment.PaymentType.BOOKING
         )
 
-        payment, created = Payment.objects.get_or_create(
+        payment, _ = Payment.objects.get_or_create(
             booking=booking,
             type=payment_type,
             status=Payment.PaymentStatus.PENDING,
@@ -196,7 +196,7 @@ class BookingViewSet(viewsets.ModelViewSet):
                 booking.status = Booking.BookingStatus.CANCELLED
                 booking.save(update_fields=["status"])
             else:
-                payment, created = Payment.objects.get_or_create(
+                payment, _ = Payment.objects.get_or_create(
                     booking=booking,
                     type=Payment.PaymentType.CANCELLATION_FEE,
                     status=Payment.PaymentStatus.PENDING,
@@ -230,7 +230,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         with transaction.atomic():
             today = timezone.localdate()
             if today > booking.check_out_date:
-                payment, created = Payment.objects.get_or_create(
+                payment, _ = Payment.objects.get_or_create(
                     booking=booking,
                     type=Payment.PaymentType.OVERSTAY_FEE,
                     status=Payment.PaymentStatus.PENDING,
