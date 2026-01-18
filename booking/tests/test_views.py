@@ -147,7 +147,6 @@ class BookingViewSetTest(APITestCase):
         )
         self.assertEqual(Booking.objects.filter(user=self.user).count(), 1)
 
-
     def test_create_booking_allowed_if_no_pending_payment(self):
         self.client.force_authenticate(user=self.user)
         Payment.objects.create(
