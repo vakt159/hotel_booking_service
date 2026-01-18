@@ -1,31 +1,15 @@
-import os
-
-import requests
-from dotenv import load_dotenv
-
-load_dotenv()
-
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-BASE_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
+from notifications.tasks import send_single_telegram_notification
+from notifications.models import TelegramSubscriber
 
 
 def send_message_to_all(text: str) -> None:
-    from notifications.models import TelegramSubscriber
-
-    if not BOT_TOKEN:
-        raise ValueError("TELEGRAM_BOT_TOKEN not found")
-
     subscribers = TelegramSubscriber.objects.all()
 
+    if not subscribers:
+        print("No Telegram subscribers found to send message.")
+        return
+
     for sub in subscribers:
-        try:
-            requests.post(
-                f"{BASE_URL}/sendMessage",
-                json={
-                    "chat_id": sub.chat_id,
-                    "text": text,
-                },
-                timeout=10,
-            )
-        except Exception as e:
-            print(f"Failed to send to {sub.chat_id}: {e}")  # noqa: T201
+        send_single_telegram_notification.delay(sub.chat_id, text)
+    
+    print(f"Dispatched {len(subscribers)} single Telegram notification tasks.")
