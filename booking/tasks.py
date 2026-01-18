@@ -49,6 +49,7 @@ def notify_no_show_telegram(booking_id):
     )
     send_telegram_notification.delay(message)
 
+
 @shared_task
 def expire_stripe_sessions():
     expiration_threshold = timezone.now() - timedelta(hours=24)
@@ -58,8 +59,6 @@ def expire_stripe_sessions():
         created_at__lte=expiration_threshold,
     )
 
-    count = expired_payments.update(
-        status=Payment.PaymentStatus.EXPIRED
-    )
+    count = expired_payments.update(status=Payment.PaymentStatus.EXPIRED)
 
     return f"Expired {count} payments older than 24 hours"

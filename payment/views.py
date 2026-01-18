@@ -43,8 +43,7 @@ class StripeWebhook(APIView):
         except stripe.error.SignatureVerificationError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({"error": str(e)},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         if event["type"] != "checkout.session.completed":
             return Response(status=status.HTTP_200_OK)
@@ -65,7 +64,10 @@ class StripeWebhook(APIView):
         if payment.type == Payment.PaymentType.CANCELLATION_FEE:
             booking.status = Booking.BookingStatus.CANCELLED
             booking.save(update_fields=["status"])
-        if booking.status in (Booking.BookingStatus.BOOKED, Booking.BookingStatus.NO_SHOW):
+        if booking.status in (
+            Booking.BookingStatus.BOOKED,
+            Booking.BookingStatus.NO_SHOW,
+        ):
             booking.status = Booking.BookingStatus.ACTIVE
             booking.save(update_fields=["status"])
         elif booking.status == Booking.BookingStatus.ACTIVE:

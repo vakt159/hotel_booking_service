@@ -20,9 +20,7 @@ def calculate_payment_amount(booking, event) -> Decimal | None:
         return price * Decimal("0.5")
     elif event == Payment.PaymentType.OVERSTAY_FEE:
         today = timezone.localdate()
-        overstay_days = max(
-            (today - booking.check_out_date).days, 0
-        )
+        overstay_days = max((today - booking.check_out_date).days, 0)
         return overstay_days * booking.price_per_night * Decimal("1.5")
     elif event == Payment.PaymentType.NO_SHOW_FEE:
         return price * Decimal("1.2")

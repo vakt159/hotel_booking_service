@@ -61,16 +61,15 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking = serializer.save()
 
         response_serializer = BookingReadSerializer(booking)
-        return Response(response_serializer.data,
-                        status=status.HTTP_201_CREATED)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         summary="List bookings",
         description=(
-                "Retrieve a list of bookings.\n\n"
-                "- Regular users see only their own bookings.\n"
-                "- Staff users see all bookings.\n"
-                "- Supports filtering by user, room, status, date range and room type."
+            "Retrieve a list of bookings.\n\n"
+            "- Regular users see only their own bookings.\n"
+            "- Staff users see all bookings.\n"
+            "- Supports filtering by user, room, status, date range and room type."
         ),
         parameters=[
             OpenApiParameter(
@@ -119,6 +118,7 @@ class BookingViewSet(viewsets.ModelViewSet):
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
     @extend_schema(request=None)
     @action(detail=True, methods=["post"], url_path="check-in")
     def check_in(self, request, pk=None):
@@ -126,12 +126,11 @@ class BookingViewSet(viewsets.ModelViewSet):
         today = datetime()
 
         if booking.status not in (
-                Booking.BookingStatus.BOOKED,
-                Booking.BookingStatus.NO_SHOW,
+            Booking.BookingStatus.BOOKED,
+            Booking.BookingStatus.NO_SHOW,
         ):
             return Response(
-                {
-                    "detail": "Check-in is allowed only for BOOKED or NO_SHOW bookings."},
+                {"detail": "Check-in is allowed only for BOOKED or NO_SHOW bookings."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -156,7 +155,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             booking=booking,
             type=payment_type,
             status=Payment.PaymentStatus.PENDING,
-            money_to_pay=calculate_payment_amount(booking, payment_type)
+            money_to_pay=calculate_payment_amount(booking, payment_type),
         )
 
         if not payment.session_id:
@@ -168,9 +167,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             payment.session_url = session["url"]
             payment.save(update_fields=["session_id", "session_url"])
 
-        return Response(
-            BookingReadSerializer(booking).data, status=status.HTTP_200_OK
-        )
+        return Response(BookingReadSerializer(booking).data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="cancel")
     def cancel(self, request, pk=None):
@@ -185,8 +182,7 @@ class BookingViewSet(viewsets.ModelViewSet):
 
         if today >= booking.check_in_date:
             return Response(
-                {
-                    "detail": "Cancellation is allowed only before check-in date."},
+                {"detail": "Cancellation is allowed only before check-in date."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -200,7 +196,9 @@ class BookingViewSet(viewsets.ModelViewSet):
                     booking=booking,
                     type=Payment.PaymentType.CANCELLATION_FEE,
                     status=Payment.PaymentStatus.PENDING,
-                    money_to_pay=calculate_payment_amount(booking, Payment.PaymentType.CANCELLATION_FEE)
+                    money_to_pay=calculate_payment_amount(
+                        booking, Payment.PaymentType.CANCELLATION_FEE
+                    ),
                 )
 
                 if not payment.session_id:
@@ -234,8 +232,9 @@ class BookingViewSet(viewsets.ModelViewSet):
                     booking=booking,
                     type=Payment.PaymentType.OVERSTAY_FEE,
                     status=Payment.PaymentStatus.PENDING,
-                    money_to_pay=calculate_payment_amount(booking,
-                                                          Payment.PaymentType.OVERSTAY_FEE)
+                    money_to_pay=calculate_payment_amount(
+                        booking, Payment.PaymentType.OVERSTAY_FEE
+                    ),
                 )
                 session = create_checkout_session(
                     amount=payment.money_to_pay,
@@ -269,7 +268,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             booking.save(update_fields=["status"])
 
             if not booking.payments.filter(
-                    type=Payment.PaymentType.NO_SHOW_FEE
+                type=Payment.PaymentType.NO_SHOW_FEE
             ).exists():
                 transaction.on_commit(
                     lambda: create_stripe_payment_task.delay(
