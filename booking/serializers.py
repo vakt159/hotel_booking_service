@@ -3,6 +3,7 @@ from datetime import date
 from rest_framework import serializers
 
 from booking.models import Booking
+from payment.serializers import PaymentSerializer
 
 
 class BookingReadSerializer(serializers.ModelSerializer):
@@ -11,6 +12,7 @@ class BookingReadSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(source="user.email", read_only=True)
     total_nights = serializers.SerializerMethodField()
     total_price = serializers.SerializerMethodField()
+    payments = PaymentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Booking
@@ -28,6 +30,7 @@ class BookingReadSerializer(serializers.ModelSerializer):
             "price_per_night",
             "total_nights",
             "total_price",
+            "payments",
         )
 
     def get_total_nights(self, obj):

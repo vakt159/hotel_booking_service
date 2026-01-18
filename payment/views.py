@@ -1,5 +1,7 @@
 import stripe
 from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -19,6 +21,7 @@ class PaymentListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
 
+@method_decorator(csrf_exempt, name="dispatch")
 class StripeWebhook(APIView):
     authentication_classes = []
     permission_classes = []

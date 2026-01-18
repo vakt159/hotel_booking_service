@@ -8,10 +8,11 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = (
             "id",
-            "booking",
             "status",
             "type",
-            "money_to_pay",
+            "booking",
             "session_url",
+            "session_id",
+            "money_to_pay",
         )
-        read_only_fields = ("id", "money_to_pay", "status", "session_url", "type")
+        read_only_fields = fields
