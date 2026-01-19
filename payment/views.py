@@ -1,6 +1,7 @@
 import stripe
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import generics, status
@@ -9,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from booking.models import Booking
 from payment.models import Payment
 from payment.serializers import PaymentSerializer
 from payment.services.payment_service import renew_payment_session
@@ -57,6 +59,22 @@ class StripeWebhook(APIView):
         if payment.status != Payment.PaymentStatus.PAID:
             payment.status = Payment.PaymentStatus.PAID
             payment.save(update_fields=["status"])
+
+        booking = payment.booking
+        if payment.type == Payment.PaymentType.CANCELLATION_FEE:
+            booking.status = Booking.BookingStatus.CANCELLED
+            booking.save(update_fields=["status"])
+        if booking.status in (
+            Booking.BookingStatus.BOOKED,
+            Booking.BookingStatus.NO_SHOW,
+        ):
+            booking.status = Booking.BookingStatus.ACTIVE
+            booking.save(update_fields=["status"])
+        elif booking.status == Booking.BookingStatus.ACTIVE:
+            booking.status = Booking.BookingStatus.COMPLETED
+            today = timezone.localdate()
+            booking.actual_check_out_date = today
+            booking.save(update_fields=["status", "actual_check_out_date"])
 
         return Response(status=status.HTTP_200_OK)
 
