@@ -3,8 +3,9 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import (
     OpenApiParameter,
+    OpenApiResponse,
     OpenApiTypes,
-    extend_schema, OpenApiResponse,
+    extend_schema,
 )
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -60,16 +61,15 @@ class BookingViewSet(viewsets.ModelViewSet):
         booking = serializer.save()
 
         response_serializer = BookingReadSerializer(booking)
-        return Response(response_serializer.data,
-                        status=status.HTTP_201_CREATED)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     @extend_schema(
         summary="List bookings",
         description=(
-                "Retrieve a list of bookings.\n\n"
-                "- Regular users see only their own bookings.\n"
-                "- Staff users see all bookings.\n"
-                "- Supports filtering by user, room, status, date range and room type."
+            "Retrieve a list of bookings.\n\n"
+            "- Regular users see only their own bookings.\n"
+            "- Staff users see all bookings.\n"
+            "- Supports filtering by user, room, status, date range and room type."
         ),
         parameters=[
             OpenApiParameter(
@@ -125,15 +125,11 @@ class BookingViewSet(viewsets.ModelViewSet):
         description="Performs check in",
         responses={
             200: BookingReadSerializer,
-            400: OpenApiResponse(
-                description="Business logic validation error"
-            ),
+            400: OpenApiResponse(description="Business logic validation error"),
             401: OpenApiResponse(
                 description="Authentication credentials were not provided or are invalid"
             ),
-            404: OpenApiResponse(
-                description="Booking not found"
-            ),
+            404: OpenApiResponse(description="Booking not found"),
         },
     )
     @action(detail=True, methods=["post"], url_path="check-in")
@@ -142,12 +138,11 @@ class BookingViewSet(viewsets.ModelViewSet):
         today = timezone.localdate()
 
         if booking.status not in (
-                Booking.BookingStatus.BOOKED,
-                Booking.BookingStatus.NO_SHOW,
+            Booking.BookingStatus.BOOKED,
+            Booking.BookingStatus.NO_SHOW,
         ):
             return Response(
-                {
-                    "detail": "Check-in is allowed only for BOOKED or NO_SHOW bookings."},
+                {"detail": "Check-in is allowed only for BOOKED or NO_SHOW bookings."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -184,26 +179,19 @@ class BookingViewSet(viewsets.ModelViewSet):
             payment.session_url = session["url"]
             payment.save(update_fields=["session_id", "session_url"])
 
-        return Response(BookingReadSerializer(booking).data,
-                        status=status.HTTP_200_OK)
+        return Response(BookingReadSerializer(booking).data, status=status.HTTP_200_OK)
 
     @extend_schema(
         request=None,
         summary="Cancel",
-        description=(
-                "Performs cancellation of booking"
-        ),
+        description=("Performs cancellation of booking"),
         responses={
             200: BookingReadSerializer,
-            400: OpenApiResponse(
-                description="Business logic validation error"
-            ),
+            400: OpenApiResponse(description="Business logic validation error"),
             401: OpenApiResponse(
                 description="Authentication credentials were not provided or are invalid"
             ),
-            404: OpenApiResponse(
-                description="Booking not found"
-            ),
+            404: OpenApiResponse(description="Booking not found"),
         },
     )
     @action(detail=True, methods=["post"], url_path="cancel")
@@ -219,13 +207,11 @@ class BookingViewSet(viewsets.ModelViewSet):
 
         if today >= booking.check_in_date:
             return Response(
-                {
-                    "detail": "Cancellation is allowed only before check-in date."},
+                {"detail": "Cancellation is allowed only before check-in date."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        hours_to_checkin = (
-                                   booking.check_in_date - today).total_seconds() / 3600
+        hours_to_checkin = (booking.check_in_date - today).total_seconds() / 3600
         with transaction.atomic():
             if hours_to_checkin > 24:
                 booking.status = Booking.BookingStatus.CANCELLED
@@ -257,20 +243,14 @@ class BookingViewSet(viewsets.ModelViewSet):
     @extend_schema(
         request=None,
         summary="Check out",
-        description=(
-                "Performs check out from room"
-        ),
+        description=("Performs check out from room"),
         responses={
             200: BookingReadSerializer,
-            400: OpenApiResponse(
-                description="Business logic validation error"
-            ),
+            400: OpenApiResponse(description="Business logic validation error"),
             401: OpenApiResponse(
                 description="Authentication credentials were not provided or are invalid"
             ),
-            404: OpenApiResponse(
-                description="Booking not found"
-            ),
+            404: OpenApiResponse(description="Booking not found"),
         },
     )
     @action(detail=True, methods=["post"], url_path="check-out")
@@ -306,8 +286,7 @@ class BookingViewSet(viewsets.ModelViewSet):
                 today = timezone.localdate()
                 booking.actual_check_out_date = today
                 booking.save(update_fields=["status", "actual_check_out_date"])
-        expired_payments = booking.payments.filter(
-            status=Payment.PaymentStatus.EXPIRED)
+        expired_payments = booking.payments.filter(status=Payment.PaymentStatus.EXPIRED)
 
         renewed_payments = []
         for payment in expired_payments:
