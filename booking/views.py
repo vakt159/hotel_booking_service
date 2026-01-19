@@ -122,7 +122,7 @@ class BookingViewSet(viewsets.ModelViewSet):
     @extend_schema(
         request=None,
         summary="Check in",
-        description="Performs check in",
+        description=("Performs check in"),
         responses={
             200: BookingReadSerializer,
             400: OpenApiResponse(description="Business logic validation error"),
